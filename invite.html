@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Свидание? ♥️</title>
+  <meta name="description" content="Приглашение на свидание в игральном стиле — тяни карту!">
+  <meta property="og:title" content="Свидание? ♥️">
+  <meta property="og:description" content="У меня для тебя специальная карта...">
+  <meta property="og:type" content="website">
+  <style>
+    :root {
+      --table-green: #0e5f3c;
+      --felt-green: #0c4f33;
+      --gold: #d4af37;
+      --card: #fff;
+      --ink: #222;
+      --accent: #e63946;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: white;
+      background: radial-gradient(1200px 700px at 50% 10%, var(--table-green), #07281b 70%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .wrap {
+      width: min(920px, 92vw);
+      text-align: center;
+      position: relative;
+      padding: 24px 0 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: .5px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.4);
+    }
+    .subtitle {
+      opacity: .9;
+      margin-bottom: 18px;
+    }
+
+    /* Table rim */
+    .rim {
+      position: absolute;
+      inset: 16px;
+      border-radius: 28px;
+      box-shadow:
+        inset 0 0 0 4px rgba(0,0,0,.35),
+        inset 0 0 0 12px rgba(0,0,0,.18),
+        0 30px 120px rgba(0,0,0,.45);
+      pointer-events: none;
+    }
+
+    /* Deck / Card */
+    .table {
+      margin: 24px auto 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      place-items: center;
+      gap: 20px;
+    }
+    .card-outer {
+      perspective: 1400px;
+      width: min(340px, 75vw);
+      aspect-ratio: 2.5/3.5;
+      border-radius: 18px;
+    }
+    .card {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .9s cubic-bezier(.2,.7,.1,1);
+      cursor: pointer;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .card.is-flipped { transform: rotateY(180deg) rotateZ(-1deg); }
+    .face {
+      position: absolute; inset: 0;
+      background: var(--card);
+      border-radius: 18px;
+      backface-visibility: hidden;
+      overflow: hidden;
+    }
+    .back {
+      display: grid;
+      place-items: center;
+      background: repeating-conic-gradient(from 0deg, #0b2a1c 0 8deg, #104b31 8deg 16deg);
+      border: 10px solid #fff;
+      outline: 2px solid #0b2a1c;
+    }
+    .back .pattern {
+      width: 70%; aspect-ratio: 1/1;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(255,255,255,.28) 0 20%, transparent 21%),
+        radial-gradient(circle at 80% 75%, rgba(255,255,255,.28) 0 20%, transparent 21%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.18) 0 30%, transparent 31%);
+      outline: 3px solid rgba(255,255,255,.85);
+      box-shadow: inset 0 0 30px rgba(0,0,0,.35);
+    }
+    .front {
+      transform: rotateY(180deg);
+      padding: 18px;
+      background:
+        radial-gradient(circle at 50% -30%, #fff6 0 32%, transparent 33%),
+        var(--card);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      color: var(--ink);
+    }
+    .pip {
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .pip.bottom { justify-self: end; align-self: end; }
+    .center {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 10px;
+    }
+    .queen {
+      width: 76%;
+      aspect-ratio: 3/4;
+      border-radius: 14px;
+      background:
+        linear-gradient(135deg, #ffe7ec, #fff 40%, #fafafa),
+        #fff;
+      box-shadow: inset 0 0 0 2px #e4e4e4, 0 10px 30px rgba(0,0,0,.08);
+      display: grid; place-items: center;
+      position: relative;
+    }
+    .queen:before {
+      content: "Q♥";
+      position: absolute;
+      top: 8px; left: 10px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: .5px;
+    }
+    .queen:after {
+      content: "♥";
+      position: absolute;
+      bottom: 6px; right: 10px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .invite {
+      padding: 10px 14px 14px;
+      font-size: clamp(14px, 2.7vw, 16px);
+      line-height: 1.45;
+      color: #333;
+    }
+    .invite h3 {
+      margin: 6px 0 6px;
+      font-size: clamp(16px, 3vw, 18px);
+    }
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #111;
+      color: #ffd166;
+      font-weight: 700;
+      letter-spacing: .5px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffe082, #ffcc4d);
+      color: #3a2f00;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.15);
+      transform: translateY(0);
+      transition: transform .15s ease, box-shadow .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(1px); }
+    .btn.alt {
+      background: linear-gradient(180deg, #d3f36b, #bde23b);
+      color: #182600;
+    }
+    .btn.dark {
+      background: #111; color: #ffd166;
+    }
+
+    .hint {
+      opacity: .85;
+      font-size: 14px;
+      margin-top: -6px;
+    }
+
+    /* Chips */
+    .chips {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .chip {
+      width: 38px; height: 38px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 50%, #fff 0 18%, transparent 19%),
+        repeating-conic-gradient(#fff 0 10deg, #c00 10deg 20deg);
+      border: 3px solid #fff; box-shadow: var(--shadow);
+    }
+    .chip:nth-child(2) {
+      background:
+        radial-gradient(circle at 50% 50%, #fff 0 18%, transparent 19%),
+        repeating-conic-gradient(#fff 0 10deg, #0a7 10deg 20deg);
+    }
+    .chip:nth-child(3) {
+      background:
+        radial-gradient(circle at 50% 50%, #fff 0 18%, transparent 19%),
+        repeating-conic-gradient(#fff 0 10deg, #06c 10deg 20deg);
+    }
+
+    /* Confetti (hearts) */
+    canvas#fx { position: fixed; inset: 0; pointer-events: none; }
+    footer {
+      opacity: .85; font-size: 13px; margin-top: 8px;
+    }
+    a, a:visited { color: #ffd166; }
+  </style>
+</head>
+<body>
+  <canvas id="fx"></canvas>
+  <div class="wrap">
+    <div class="rim"></div>
+    <h1>Сыграем в свидание?</h1>
+    <div class="subtitle">Тяни карту — там сюрприз ♥</div>
+
+    <div class="table">
+      <div class="card-outer" id="cardOuter" title="Жми, чтобы перевернуть">
+        <div class="card" id="card">
+          <div class="face back">
+            <div class="pattern"></div>
+          </div>
+          <div class="face front">
+            <div class="pip">♥</div>
+            <div class="center">
+              <div class="queen">
+                <div class="invite">
+                  <div class="badge">Приглашение</div>
+                  <h3 id="hello">Привет!</h3>
+                  <p id="text">У меня для тебя особенная карта. Предлагаю свидание <span id="date">в эту пятницу</span> <span id="time">в 20:00</span> в <span id="place">уютном месте</span>. Что скажешь?</p>
+                  <div class="chips">
+                    <div class="chip"></div><div class="chip"></div><div class="chip"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pip bottom">♥</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnYes">Да! Поехали</button>
+        <button class="btn alt" id="btnAlt">Хочу другой день</button>
+        <a class="btn dark" id="btnVenue" href="#" target="_blank" rel="noopener">Открыть место</a>
+      </div>
+      <div class="hint">Можно персонализировать через параметры ссылки — см. ниже.</div>
+    </div>
+
+    <footer id="footer"></footer>
+  </div>
+
+  <script>
+    // URL params helper
+    const params = new URLSearchParams(location.search);
+    const by = (s) => document.querySelector(s);
+
+    // Personalize text
+    const name = params.get('name');
+    const dateStr = params.get('date');
+    const timeStr = params.get('time');
+    const placeStr = params.get('place');
+    const fromStr = params.get('from');
+    const tg = params.get('tg');              // telegram username without @
+    const venue = params.get('venue');        // link to a map / venue
+
+    if (name) by('#hello').textContent = `Привет, ${name}!`;
+    if (dateStr) by('#date').textContent = dateStr;
+    if (timeStr) by('#time').textContent = timeStr;
+    if (placeStr) by('#place').textContent = placeStr;
+
+    by('#btnVenue').style.display = venue ? 'inline-flex' : 'none';
+    if (venue) by('#btnVenue').href = venue;
+
+    // Card flip
+    const card = by('#card');
+    const outer = by('#cardOuter');
+    const flip = () => {
+      card.classList.toggle('is-flipped');
+      if (card.classList.contains('is-flipped')) burst();
+    };
+    outer.addEventListener('click', flip);
+
+    // Buttons
+    const answerYes = () => {
+      burst(true);
+      const base = tg ? `https://t.me/${tg}` : (fromStr ? `mailto:?subject=${encodeURIComponent('Свидание ♥')}&body=${encodeURIComponent('Да! Мне подходит.')}%0A` : '#');
+      if (tg) {
+        window.location.href = base;
+      } else if (fromStr) {
+        window.location.href = base;
+      } else {
+        alert('Класс! Напиши мне в мессенджере ♥');
+      }
+    };
+    const answerAlt = () => {
+      burst();
+      const msg = 'Супер! Напиши, какой день удобнее 😊';
+      if (tg) {
+        window.location.href = `https://t.me/${tg}`;
+      } else {
+        alert(msg);
+      }
+    };
+    by('#btnYes').addEventListener('click', answerYes);
+    by('#btnAlt').addEventListener('click', answerAlt);
+
+    // Footer signature
+    const footer = by('#footer');
+    footer.innerHTML = fromStr ? `От ${fromStr}` : '';
+
+    // Hearts confetti
+    const canvas = document.getElementById('fx');
+    const ctx = canvas.getContext('2d');
+    let W, H, hearts = [];
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function Heart() {
+      this.x = Math.random() * W;
+      this.y = -20;
+      this.size = 8 + Math.random()*14;
+      this.speed = 1 + Math.random()*2;
+      this.alpha = .9;
+      this.spin = Math.random()*Math.PI;
+    }
+    Heart.prototype.draw = function() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.spin);
+      ctx.globalAlpha = this.alpha;
+      const s = this.size;
+      ctx.beginPath();
+      // simple heart path
+      ctx.moveTo(0, s/4);
+      ctx.bezierCurveTo(0, -s/2, -s, -s/4, -s, s/6);
+      ctx.bezierCurveTo(-s, s/1.1, 0, s, 0, s*1.3);
+      ctx.bezierCurveTo(0, s, s, s/1.1, s, s/6);
+      ctx.bezierCurveTo(s, -s/4, 0, -s/2, 0, s/4);
+      ctx.closePath();
+      ctx.fillStyle = '#ff3b3b';
+      ctx.fill();
+      ctx.restore();
+
+      this.y += this.speed;
+      this.spin += 0.02;
+      this.alpha -= 0.005;
+      return this.alpha > 0 && this.y < H + 30;
+    };
+
+    function burst(big=false) {
+      for (let i=0; i<(big?80:40); i++) hearts.push(new Heart());
+    }
+
+    (function loop(){
+      requestAnimationFrame(loop);
+      ctx.clearRect(0,0,W,H);
+      hearts = hearts.filter(h => h.draw());
+    })();
+
+    // Share helper (optional quick-share on mobile)
+    if (navigator.share) {
+      // Build a friendly share link example with current personalization
+      const url = new URL(location.href);
+      const u = url.toString();
+      // Add a quick long-press hint?
+    }
+  </script>
+
+  <!-- Personalization guide -->
+  <div style="position:fixed; left:12px; right:12px; bottom:10px; text-align:center; font-size:12px; opacity:.7;">
+    Подсказка: добавь параметры к ссылке для персонализации —
+    <code>?name=Алина&date=Пятница%2C%2020%3A00&time=20%3A00&place=Coffee%20Room&from=Адилет&tg=your_telegram&venue=https%3A%2F%2Fmaps.apple.com%2F%3Fq%3DCoffee%2520Room</code>
+  </div>
+</body>
+</html>
